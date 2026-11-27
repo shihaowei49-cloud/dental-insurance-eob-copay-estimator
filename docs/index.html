@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="description" content="Estimate patient and insurer shares for a dental treatment plan with deductible, benefit cap, and coordination of benefits accounting.">
+  <title>Dental EOB &amp; Copay Estimator</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./demo.js"></script>
+</head>
+<body>
+  <header class="wrap masthead">
+    <nav aria-label="Project links">
+      <a href="https://github.com/shihaowei49-cloud/dental-insurance-eob-copay-estimator">Source on GitHub</a>
+      <a href="./LICENSE">MIT license</a>
+    </nav>
+    <h1>Dental EOB<br>&amp; copay estimator</h1>
+    <p>Estimate the patient balance from billed fees, plan benefits, and a second insurer.</p>
+  </header>
+  <main class="wrap">
+    <section class="balance" aria-labelledby="summary-title">
+      <div>
+        <h2 id="summary-title">Estimated patient total</h2>
+        <p id="patient-total" role="status">Calculate an estimate below.</p>
+      </div>
+      <dl id="payment-totals"></dl>
+    </section>
+
+    <form id="estimate-form">
+      <section aria-labelledby="coverage-title">
+        <h2 id="coverage-title">Plan benefits</h2>
+        <p>Enter insurer-paid percentages and the balances remaining before these procedures. Blank maximums are uncapped in this estimate.</p>
+        <div id="plans" class="plans"></div>
+        <div class="coordination">
+          <label class="check"><input id="dual" type="checkbox" checked> Include a secondary plan</label>
+          <label>Coordination of benefits
+            <select id="cob-mode">
+              <option value="standard">Standard</option>
+              <option value="non-duplication">Non-duplication</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section aria-labelledby="procedures-title">
+        <h2 id="procedures-title">Treatment lines</h2>
+        <p>Enter fees in dollars and place lines in expected claim order. With a PPO fee, the discount is a write-off. For an out-of-network line, enter the UCR allowed amount if available.</p>
+        <div id="procedures"></div>
+        <div class="actions">
+          <button type="button" id="add">Add procedure</button>
+          <button type="submit" class="primary">Calculate estimate</button>
+        </div>
+      </section>
+    </form>
+    <noscript><p>Enable JavaScript to calculate an estimate from these forms.</p></noscript>
+    <p id="form-error" class="error" role="alert" hidden></p>
+
+    <section aria-labelledby="breakdown-title">
+      <h2 id="breakdown-title">Line-by-line estimate</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-labelledby="breakdown-title">
+        <table>
+          <thead><tr>
+            <th scope="col">CDT code</th><th scope="col">Category</th><th scope="col">Billed</th><th scope="col">PPO write-off</th>
+            <th scope="col">Balance bill</th><th scope="col">Primary</th><th scope="col">Secondary</th><th scope="col">Patient</th>
+          </tr></thead>
+          <tbody id="lines"></tbody>
+        </table>
+      </div>
+      <div id="remaining" class="plans"></div>
+      <p class="note">Use the carrier's benefit schedule and COB terms to confirm eligibility, allowed fees, and processing rules. The calculator uses the supplied plan assumptions. Entries stay in this page.</p>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <a href="https://dentalplan.shihaoeth.site/?utm_source=github_oss&amp;utm_medium=repo_pages&amp;utm_campaign=quality_wave_8">DentalPlan</a>
+    <a href="https://boathaul.shihaoeth.site/?utm_source=github_oss&amp;utm_medium=repo_pages&amp;utm_campaign=quality_wave_8">BoatHaul</a>
+  </footer>
+
+  <template id="plan-template">
+    <fieldset>
+      <legend></legend>
+      <div class="rates">
+        <label>Preventive %
+          <input name="preventive" type="number" min="0" max="100" step=".01" required>
+        </label>
+        <label>Basic %
+          <input name="basic" type="number" min="0" max="100" step=".01" required>
+        </label>
+        <label>Major %
+          <input name="major" type="number" min="0" max="100" step=".01" required>
+        </label>
+        <label>Ortho %
+          <input name="ortho" type="number" min="0" max="100" step=".01" required>
+        </label>
+      </div>
+      <div class="fees">
+        <label>Deductible left ($) <input name="deductible" inputmode="decimal" maxlength="17" placeholder="0"></label>
+        <label>Annual max left ($) <input name="annual" inputmode="decimal" maxlength="17" placeholder="Uncapped"></label>
+        <label>Ortho lifetime max left ($) <input name="orthoMax" inputmode="decimal" maxlength="17" placeholder="Uncapped"></label>
+      </div>
+      <label class="check"><input name="waiver" type="checkbox"> Waive the preventive deductible</label>
+    </fieldset>
+  </template>
+  <template id="procedure-template">
+    <fieldset class="procedure">
+      <legend>Procedure</legend>
+      <div class="procedure-fields">
+        <label>CDT code <input name="code" type="text" maxlength="5" pattern="[Dd][0-9]{4}" placeholder="D1110" required></label>
+        <label>Category
+          <select name="category">
+            <option value="">Example mapping</option>
+            <option value="preventive">Preventive</option>
+            <option value="basic">Basic</option>
+            <option value="major">Major</option>
+            <option value="ortho">Ortho</option>
+          </select>
+        </label>
+        <label>Billed fee ($) <input name="billed" inputmode="decimal" maxlength="17" required></label>
+        <label>PPO fee ($) <input name="ppo" inputmode="decimal" maxlength="17"></label>
+        <label>UCR amount ($) <input name="ucr" inputmode="decimal" maxlength="17"></label>
+        <label>Secondary allowed ($) <input name="secondaryAllowed" inputmode="decimal" maxlength="17"></label>
+        <button type="button" class="remove">Remove procedure</button>
+      </div>
+    </fieldset>
+  </template>
+</body>
+</html>
