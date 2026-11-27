@@ -53,3 +53,8 @@ Use carrier documents to confirm actual CDT tiers, exclusions, deductible credit
 Run `node --test` from this checkout. To preview the static demo, serve the `docs/` directory on localhost with an HTTP static server and open the server's URL in a browser. For GitHub Pages, select the repository branch and `/docs` as the source. The demo imports its adjacent byte-identical module and keeps calculations in the page.
 
 [MIT license](./LICENSE)
+
+## Related Full Workbenches
+
+- [DentalPlan](https://dentalplan.shihaoeth.site/?utm_source=github_oss&utm_medium=repo_pages&utm_campaign=quality_wave_8)
+- [BoatHaul](https://boathaul.shihaoeth.site/?utm_source=github_oss&utm_medium=repo_pages&utm_campaign=quality_wave_8)
